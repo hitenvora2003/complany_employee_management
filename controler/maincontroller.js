@@ -12,7 +12,7 @@ exports.getalldata = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const type = req.query.type;
+        const type = req.query.type?.toLowerCase();
 
         // 🔹 CASE 1: No type → return all
         if (!type) {
@@ -117,27 +117,40 @@ exports.getalldata = async (req, res) => {
 
         // 🔹 CASE 2: Individual types
 
-        if (type === "signup") {
-            const data = await signup.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-            return res.json({ status: "success", page, limit, data });
+        if (type === "signup" || type === "signups") {
+            const signups = await signup.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+            const totalUsers = await signup.countDocuments()
+            return res.json({
+                status: "success",
+                page, limit, totalUsers,
+                data: signups
+            });
         }
 
-        if (type === "department") {
-            const data = await department.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-            return res.json({ status: "success", page, limit, data });
+        if (type === "department" || type === "departments") {
+            const departments = await department.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+            const totaldepartments = await department.countDocuments()
+            return res.json({
+                status: "success", page, limit,totaldepartments,
+                data: departments
+            });
         }
 
-        if (type === "employee") {
-            const data = await employee.find()
+        if (type === "employee" || type === "employees") {
+            const employees = await employee.find()
                 .populate('department')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-            return res.json({ status: "success", page, limit, data });
+            const totalemployees = await employee.countDocuments()
+            return res.json({
+                status: "success", page, limit, totalemployees,
+                data: employees
+            });
         }
 
-        if (type === "project") {
-            const data = await project.find()
+        if (type === "project" || type === "projects") {
+            const projects = await project.find()
                 .populate('department')
                 .populate({
                     path: 'employees',
@@ -146,11 +159,16 @@ exports.getalldata = async (req, res) => {
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-            return res.json({ status: "success", page, limit, data });
+            const totalprojects = await project.countDocuments()
+            return res.json({
+                status: "success",
+                page, limit, totalprojects,
+                data: projects
+            });
         }
 
-        if (type === "task") {
-            const data = await task.find()
+        if (type === "task" || type === "tasks") {
+            const tasks = await task.find()
                 .populate({
                     path: 'project',
                     populate: [
@@ -169,19 +187,28 @@ exports.getalldata = async (req, res) => {
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-            return res.json({ status: "success", page, limit, data });
+            const totaltasks = await task.countDocuments()
+            return res.json({
+                status: "success",
+                page, limit, totaltasks,
+                data: tasks
+            });
         }
 
-        if (type === "timesheet") {
-            const data = await timesheet.find()
+        if (type === "timesheet" || type === "timesheets") {
+            const timesheets = await timesheet.find()
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-            return res.json({ status: "success", page, limit, data });
+            const totaltimesheets = timesheet.countDocuments()
+            return res.json({
+                status: "success", page, limit, totaltimesheets,
+                data: timesheets
+            });
         }
 
-        if (type === "leave") {
-            const data = await leave.find()
+        if (type === "leave" || type === "leaves") {
+            const leaves = await leave.find()
                 .populate({
                     path: "employee",
                     populate: { path: 'department' }
@@ -190,7 +217,11 @@ exports.getalldata = async (req, res) => {
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-            return res.json({ status: "success", page, limit, data });
+            const totalleaves = leave.countDocuments()
+            return res.json({
+                status: "success", page, limit, totalleaves,
+                data: leaves
+            });
         }
 
         // 🔹 Invalid type
